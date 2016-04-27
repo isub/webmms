@@ -4,32 +4,36 @@
 
 int main(int argc, char *argv[])
 {
-  const char *pszFileName = NULL;
+  char *pszFileName, *pszDir;
+  MmsEnvelope *psoEnv;
   MmsMsg *psoMsg = NULL;
-  Octstr *psoBinMsg, *psoMIMEOStr;
+  Octstr *psoMIMEOStr = NULL;
   MIMEEntity *psoMIME, *psoMIMETmp;
   int iMIMENum;
   int iInd;
 
-  gwlib_init();
-
-  if(argc == 2) {
-    pszFileName = argv[1];
+  if(argc == 3) {
+    pszDir = argv[1];
+    pszFileName = argv[2];
   } else {
     return 1;
   }
 
-  psoBinMsg = octstr_read_file(pszFileName);
-  if(!psoBinMsg) {
-    fprintf(stdout, "can not to read file\n");
+  gwlib_init();
+  mms_strings_init();
+
+  psoEnv = default_qfuncs.mms_queue_readenvelope(pszFileName, pszDir, 0);
+  if(psoEnv) {
+    psoMsg = default_qfuncs.mms_queue_getdata(psoEnv);
+    default_qfuncs.mms_queue_free_env(psoEnv);
+  } else {
     return -1;
   }
-  psoMsg = mms_frombinary(psoBinMsg, octstr_imm(""));
-  if(psoMsg) {
-    fprintf(stdout, "mms was converted successfully\n");
-  } else {
-    goto done;
+
+  if(!psoMsg) {
+    return -1;
   }
+
   fprintf(stdout, "message type: %d\n", mms_messagetype(psoMsg));
   fprintf(stdout, "message encoding: ");
   switch(mms_message_enc(psoMsg)) {
@@ -50,13 +54,16 @@ int main(int argc, char *argv[])
     fprintf(stdout, "MIME parts number: %d\n", iMIMENum);
     for(iInd = 0; iInd < iMIMENum; ++iInd) {
       psoMIMETmp = mime_entity_get_part(psoMIME, iInd);
+      if(psoMIMEOStr) {
+        octstr_destroy(psoMIMEOStr);
+      }
       psoMIMEOStr = mime_entity_to_octstr(psoMIMETmp);
       fprintf(stdout, "MIME #%d: %s\n", iInd, octstr_get_cstr(psoMIMEOStr));
     }
   }
   done:
-  octstr_destroy(psoBinMsg);
 
+  mms_strings_shutdown();
   gwlib_shutdown();
 
   return 0;
