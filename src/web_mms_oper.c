@@ -21,14 +21,14 @@ int create_web_data(char *p_pszFileName, char *p_pszMMSDir, const char *p_pszWeb
   gwlib_init();
   mms_strings_init();
 
-  /* формируем имя директрии для вывода результатов */
+  /* С„РѕСЂРјРёСЂСѓРµРј РёРјСЏ РґРёСЂРµРєС‚СЂРёРё РґР»СЏ РІС‹РІРѕРґР° СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ */
   psoWebDir = octstr_create(p_pszWebDir);
   if('/' != octstr_get_char(psoWebDir, octstr_len(psoWebDir) - 1)) {
     octstr_append_char(psoWebDir, '/');
   }
   octstr_append_cstr(psoWebDir, p_pszFileName);
 
-  /* создаем директорию */
+  /* СЃРѕР·РґР°РµРј РґРёСЂРµРєС‚РѕСЂРёСЋ */
   if(mkdir(octstr_get_cstr(psoWebDir), 0777)) {
     if(errno != EEXIST) {
       iRetVal = 2;
@@ -51,7 +51,7 @@ int create_web_data(char *p_pszFileName, char *p_pszMMSDir, const char *p_pszWeb
   }
 
   psoHdrs = octstr_create("");
-  /* выбираем необходимые заголовки */
+  /* РІС‹Р±РёСЂР°РµРј РЅРµРѕР±С…РѕРґРёРјС‹Рµ Р·Р°РіРѕР»РѕРІРєРё */
   psoHdrList = mms_message_headers(psoMsg);
   /* From */
   psoHdrName = octstr_create("From");
@@ -79,12 +79,12 @@ int create_web_data(char *p_pszFileName, char *p_pszMMSDir, const char *p_pszWeb
     }
   }
 
-  /* формируем имя файла для вывода результатов, используем ту же переменную, что и для директории */
+  /* С„РѕСЂРјРёСЂСѓРµРј РёРјСЏ С„Р°Р№Р»Р° РґР»СЏ РІС‹РІРѕРґР° СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ, РёСЃРїРѕР»СЊР·СѓРµРј С‚Сѓ Р¶Рµ РїРµСЂРµРјРµРЅРЅСѓСЋ, С‡С‚Рѕ Рё РґР»СЏ РґРёСЂРµРєС‚РѕСЂРёРё */
   if('/' != octstr_get_char(psoWebDir, octstr_len(psoWebDir) - 1)) {
     octstr_append_char(psoWebDir, '/');
   }
   octstr_append_cstr(psoWebDir, "common");
-  /* создаем файл */
+  /* СЃРѕР·РґР°РµРј С„Р°Р№Р» */
   iFile = open(octstr_get_cstr(psoWebDir), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   if(0 < iFile) {
     if(octstr_len(psoHdrs) != write(iFile, octstr_get_cstr(psoHdrs), octstr_len(psoHdrs))) {
@@ -125,7 +125,7 @@ int operate_single_mime(Octstr *p_psoHdrs, MIMEEntity *p_psoMIME, const char *p_
   if(psoMIMEOStr) {
     octstr_destroy(psoMIMEOStr);
   }
-  /* выбираем необходимые заголовки */
+  /* РІС‹Р±РёСЂР°РµРј РЅРµРѕР±С…РѕРґРёРјС‹Рµ Р·Р°РіРѕР»РѕРІРєРё */
   psoHdrList = mime_entity_headers(p_psoMIME);
   /* Content-type */
   psoHdrName = octstr_create("Content-type");
@@ -143,13 +143,13 @@ int operate_single_mime(Octstr *p_psoHdrs, MIMEEntity *p_psoMIME, const char *p_
   octstr_truncate(psoHdrName, 0);
   /**/
 
-  /* формируем имя файла */
+  /* С„РѕСЂРјРёСЂСѓРµРј РёРјСЏ С„Р°Р№Р»Р° */
   psoFileName = octstr_create(p_pszWebDir);
   if('/' != octstr_get_char(psoFileName, octstr_len(psoFileName) - 1)) {
     octstr_append_char(psoFileName, '/');
   }
   octstr_append(psoFileName, psoHdrValue);
-  /* создаем файл */
+  /* СЃРѕР·РґР°РµРј С„Р°Р№Р» */
   iFile = open(octstr_get_cstr(psoFileName), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   if(0 > iFile) {
     if(errno != EEXIST) {
